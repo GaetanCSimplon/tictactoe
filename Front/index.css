@@ -1,0 +1,12 @@
+#grid {
+    display:grid;
+    grid-template-columns: repeat(3,1fr);
+    grid-template-rows: repeat(3,1fr);
+    width: 100px;
+    height: 100px;
+    border: 1px solid black;
+}
+
+.cell{
+    border: 1px solid black;
+}
