@@ -1,7 +1,7 @@
 from typing import List, Dict
 
 from fastapi import FastAPI
-from pydantic import BaseModel
+from pydantic import BaseModel 
 from starlette.middleware.cors import CORSMiddleware
 
 app = FastAPI()
