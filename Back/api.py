@@ -1,10 +1,9 @@
 from typing import List, Dict
-# from game_logic
+import json
 from Back.game_logic import format_grid_for_llm
-from fastapi import FastAPI
+from Model.model import LLMClient
+from fastapi import FastAPI, HTTPException
 from starlette.middleware.cors import CORSMiddleware
-# from move_request import MoveRequest
-
 from pydantic import BaseModel, field_validator, ValidationError
 from typing import List, Dict
 import httpx
@@ -51,20 +50,21 @@ app.add_middleware(
 )
 
 @app.post("/play")
-def play(request: MoveRequest):
+async def play(request: MoveRequest):
+    
+    # 1 - Initialisation du client LLM
+    llm_client = LLMClient(model_name=request.model_name)
+    
+    # 2 - Utilisation de la méthode get_llm_move
+    
+    try:
+        coup_joue = await llm_client.get_llm_move(
+            grid=request.grid,
+            active_player_id=request.active_player_id
+        )
+        return coup_joue
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur interne lors du traitement du coup: {e}")
 
-    # recupere la grille
-    print(f"Grille reçue: {request.grid}")
-    print(f"Joueur : {request.active_player_id}")
-    print(f"Nom du modèle : {request.model_name}")
-    # envoi au LLM
-    formatted_grid = format_grid_for_llm(request.grid)
-    last_player_id = {request.active_player_id}
-    ## prompt ingeneering
-    # recup la reponse du LLM
-    ### print de la réponse
-    ## parser la reponse ?
-    ## Verifier que c'est valide
-    ## sinon je redemande au llm
-    # return
-    return {"row": 5, "col": 0}
