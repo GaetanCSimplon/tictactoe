@@ -45,7 +45,9 @@ document.querySelector("#play").addEventListener(
         .then(data => {
             console.log(data)
             /// mettre à jour la grid
-            grid[data[1]][data[0]] = joueur
+            const coup_ligne = data.row
+            const coup_col = data.col
+            grid[coup_ligne][coup_col] = joueur
             // afficher la grid
             viewGrid()
             if(joueur === "X") {
