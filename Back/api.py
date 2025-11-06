@@ -56,4 +56,4 @@ def play(request: MoveRequest):
     ## Verifier que c'est valide
     ## sinon je redemande au llm
     # return
-    return {"row": 8, "col": 0}
+    return [6, 2]
