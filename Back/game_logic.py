@@ -10,6 +10,6 @@ def format_grid_for_llm(grid: List[List[int]]) -> str:
         symbols = [SYMBOL_MAP[cell] for cell in row]
         # Jonture des symboles par '|', ajout de l'indice de ligne et formatage
         line_content = " | " .join(symbols)
-        # Utilisa
+        # Centrage du symbole dans la grille
         output += f"{i:2} | {line_content} |\n"
     return output
