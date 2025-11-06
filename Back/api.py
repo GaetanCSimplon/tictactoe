@@ -1,5 +1,5 @@
 from typing import List, Dict
-
+from game_logic import format_grid_for_llm
 from fastapi import FastAPI
 from pydantic import BaseModel, field_validator, ValidationError
 from starlette.middleware.cors import CORSMiddleware
@@ -48,6 +48,7 @@ def play(request: MoveRequest):
     print(f"Grille reçue: {request.grid}")
     print(f"Joueur : {request.active_player_id}")
     # envoi au LLM
+    # format_grid_for_llm(request.grid)
     ## prompt ingeneering
     # recup la reponse du LLM
     ### print de la réponse
