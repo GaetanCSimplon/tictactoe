@@ -3,7 +3,7 @@ from Back.game_logic import format_grid_for_llm
 from fastapi import FastAPI
 from pydantic import BaseModel, field_validator, ValidationError
 from starlette.middleware.cors import CORSMiddleware
-
+import httpx
 app = FastAPI()
 
 class MoveRequest(BaseModel):
@@ -43,7 +43,8 @@ app.add_middleware(
 )
 
 @app.post("/play")
-async def play(request: MoveRequest):
+def play(request: MoveRequest):
+
     # recupere la grille
     print(f"Grille reçue: {request.grid}")
     print(f"Joueur : {request.active_player_id}")
