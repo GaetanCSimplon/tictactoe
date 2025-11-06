@@ -8,6 +8,7 @@ from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, field_validator, ValidationError
 from typing import List, Dict
 import httpx
+
 app = FastAPI()
 
 class MoveRequest(BaseModel):
