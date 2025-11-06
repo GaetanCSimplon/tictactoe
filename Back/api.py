@@ -43,9 +43,10 @@ app.add_middleware(
 )
 
 @app.post("/play")
-def play(grid: List[List[str]]):
+def play(request: MoveRequest):
     # recupere la grille
-    print(grid)
+    print(f"Grille reçue: {request.grid}")
+    print(f"Joueur : {request.active_player_id}")
     # envoi au LLM
     ## prompt ingeneering
     # recup la reponse du LLM
@@ -54,4 +55,4 @@ def play(grid: List[List[str]]):
     ## Verifier que c'est valide
     ## sinon je redemande au llm
     # return
-    return {"row": 4, "col": 2}
+    return {"row": 8, "col": 0}
