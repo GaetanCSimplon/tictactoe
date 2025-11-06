@@ -1,9 +1,3 @@
-from typing import List, Dict
-# from game_logic import format_grid_for_llm
-from fastapi import FastAPI
-from starlette.middleware.cors import CORSMiddleware
-# from move_request import MoveRequest
-
 from pydantic import BaseModel, field_validator, ValidationError
 from typing import List, Dict
 
@@ -35,29 +29,3 @@ class MoveRequest(BaseModel):
         if v not in ALLOWED_PLAYER:
             raise ValueError(f"L'ID du joueur actif doit 1 (X) ou 2 (o). Reçu: {v}")
         return v
-
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins="*",
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.post("/play")
-def play(request: MoveRequest):
-    # recupere la grille
-    print(f"Grille reçue: {request.grid}")
-    print(f"Joueur : {request.active_player_id}")
-    # envoi au LLM
-    # format_grid_for_llm(request.grid)
-    ## prompt ingeneering
-    # recup la reponse du LLM
-    ### print de la réponse
-    ## parser la reponse ?
-    ## Verifier que c'est valide
-    ## sinon je redemande au llm
-    # return
-    return {"row": 5, "col": 0}
