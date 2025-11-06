@@ -2,7 +2,7 @@
 from dotenv import load_dotenv # Récuperer variables d'environnement
 import os
 import requests
-
+import
 # Charger les variables du fichier .env
 load_dotenv()
 
