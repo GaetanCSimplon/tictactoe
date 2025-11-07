@@ -38,40 +38,37 @@ sequenceDiagram
     participant O as Ollama (Serveur IA)
 
     U->>F: 1. Clic sur "Play"
-    
     F->>A: 2. fetch("/play", JSON_Grid)
-    
     A->>G: 3. Appelle process_llm_turn(grid, ...)
-    
+
     loop Tentatives (MAX_RETRIES)
         G->>M: 4. Appelle get_llm_move_suggestions(...)
-        
-        M->>M: 5. (Interne) Appelle format_grid_for_llm(grid)
-        M->>O: 6. (httpx) Envoie Prompt (avec "Top 3 moves")
-        O-->>M: 7. (JSON) Réponse {"moves": [...]}
         M-->>G: 8. (Python) Renvoie la liste [coup1, coup2, coup3]
         
         G->>G: 9. (Interne) Appelle is_move_valid(grid, coup1)
         
-        alt Coup 1 est Valide
+        opt Coup 1 est Valide
             G-->>A: 10. Renvoie le coup1
             break
+        end
         
-        else Coup 1 Invalide
+        opt Coup 1 est Invalide
             G->>G: 11. (Interne) Appelle is_move_valid(grid, coup2)
             
-            alt Coup 2 est Valide
+            opt Coup 2 est Valide
                 G-->>A: 12. Renvoie le coup2
                 break
+            end
             
-            else Coup 2 Invalide
+            opt Coup 2 est Invalide
                 G->>G: 13. (Interne) Appelle is_move_valid(grid, coup3)
                 
-                alt Coup 3 est Valide
+                opt Coup 3 est Valide
                     G-->>A: 14. Renvoie le coup3
                     break
+                end
                 
-                else Tous les coups Invalides
+                opt Coup 3 est Invalide
                     G->>G: 15. Prépare error_history
                 end
             end
