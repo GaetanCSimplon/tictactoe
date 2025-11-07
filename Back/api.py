@@ -1,4 +1,4 @@
-from .game_logic import process_llm_turn
+from .game_logic import process_llm_turn, check_win
 from .move_request import MoveRequest
 from fastapi import FastAPI, HTTPException
 from starlette.middleware.cors import CORSMiddleware
@@ -26,7 +26,28 @@ async def play(request: MoveRequest):
             model_name=request.model_name,
             max_retries=MAX_RETRIES
         )
-        return coup_joue
+        # Créer une grille temporaire pour appliquer le coup
+        temp_grid = [row[:] for row in request.grid]
+        row = coup_joue["row"]
+        col = coup_joue["col"]
+        
+        # Appliquer le coup du LLM sur la grille temporaire
+        temp_grid[row][col] = request.active_player_id
+        
+        # Appelle la 
+        is_winner = check_win(
+            temp_grid,
+            request.active_player_id,
+            row,
+            col
+        )
+        
+        return {
+            "row": row,
+            "col": col,
+            "is_winner": is_winner,
+            "player_id": request.active_player_id
+        }
     except ValueError as e:
         # Erreur levée par process_llm_turn si les 3 tentatives échouent
         raise HTTPException(status_code=400, detail=f"Echec du LLM : {e}")

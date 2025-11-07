@@ -67,3 +67,48 @@ async def process_llm_turn(
     
     # Si la boucle se termine sans succès
     raise ValueError("Le LLM a donné trop de coups invalides consécutifs.")
+
+# Fonction de validation de victoire
+
+def check_win(grid: List[List[int]],
+              player_id: int, 
+              last_move_row: int, last_move_col: int) -> bool:
+    """ 
+    Vérifie si le joueur (player_id) a gagné en jouant à la position (last_move_row, last_move_col)
+    """
+    GRID_SIZE = 10
+    WIN_LENGTH = 5
+    # 4 directions à vérifier (Horizontale, Verticale, 2 Diagonales)
+    # (dr, dc) = (delta_row, delta_col)
+    directions = [
+        (0,1), # Horizontal
+        (1,0), # Vertical
+        (1,1), # Diagonale (Bas-droite)
+        (1,-1) # Diagonale (Bas-gauche)
+    ]
+    for dr, dc in directions:
+        count = 1 # compte le dernier jeton placé
+        # Vérification des directions
+        
+        ## Droite
+        for i in range(1, WIN_LENGTH):
+            r, c = last_move_row + dr * i, last_move_col + dc * i
+            if 0 <= r < GRID_SIZE and 0 <= c < GRID_SIZE and grid[r][c] == player_id:
+                count += 1
+            else:
+                break # Arrête si hors grille ou jeton différent
+        
+        ## Gauche
+        for i in range(1, WIN_LENGTH):
+            r, c = last_move_row - dr * i, last_move_col - dc * i
+            if 0 <= r < GRID_SIZE and 0 <= c < GRID_SIZE and grid[r][c] == player_id:
+                count += 1
+            else:
+                break
+        
+        if count >= WIN_LENGTH:
+            return True # Condition de victoire atteinte
+            
+    return False # Pas atteinte
+        
+        
