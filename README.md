@@ -52,24 +52,33 @@ sequenceDiagram
         M-->>G: 8. (Python) Renvoie la liste [coup1, coup2, coup3]
         
         G->>G: 9. (Interne) Appelle is_move_valid(grid, coup1)
+        
         alt Coup 1 est Valide
             G-->>A: 10. Renvoie le coup1
             break
         else Coup 1 Invalide
-            G->>G: 10b. Appelle is_move_valid(grid, coup2)
+            G->>G: 11. (Interne) Appelle is_move_valid(grid, coup2)
+            
             alt Coup 2 est Valide
-                G-->>A: 10c. Renvoie le coup2
+                G-->>A: 12. Renvoie le coup2
                 break
-            else Coups 2 et 3 Invalides
-                G->>G: 10d. Prépare error_history pour la prochaine tentative
+            else Coup 2 Invalide
+                G->>G: 13. (Interne) Appelle is_move_valid(grid, coup3)
+                
+                alt Coup 3 est Valide
+                    G-->>A: 14. Renvoie le coup3
+                    break
+                else Tous les coups Invalides
+                    G->>G: 15. Prépare error_history pour la prochaine tentative
+                end
             end
         end
     end
     
-    A-->>F: 11. (JSON) Renvoie le coup_valide {"row": X, "col": Y}
+    A-->>F: 16. (JSON) Renvoie le coup_valide {"row": X, "col": Y}
     
-    F->>F: 12. (JS) Met à jour la variable 'grid'
-    F->>U: 13. Appelle viewGrid() pour afficher le coup
+    F->>F: 17. (JS) Met à jour la variable 'grid'
+    F->>U: 18. Appelle viewGrid() pour afficher le coup
 
 ```
 
