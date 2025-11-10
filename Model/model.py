@@ -35,51 +35,19 @@ class LLMClient:
         current_mark = "X" if active_player_id == 1 else "O"
 
         prompt = f"""
+        You are playing a Tic-Tac-Toe game on a 10x10 board. Two players alternate placing their marks: Player 1 uses 'x' and Player 2 uses 'o'. The goal is to align exactly 5 marks consecutively horizontally, vertically, or diagonally.
 
-You are a logical and strategic AI engine playing the extended Tic-Tac-Toe game (Gomoku) on a 10x10 grid.
+        Current game state (' ' for empty cells):
+        {formatted_grid}
 
-- "X" = Player 1  
-- "O" = Player 2  
-- "." = empty cell  
-- Indices: row and col ∈ [0,9]
+        Players alternate turns to avoid filling entire rows, columns, or diagonals completely.
+        The last move was played by Player {last_player_id}, but you should focus on the entire board state.
+        It is now Player {active_player_id}'s turn, who plays as '{current_mark}'. Your model's name is '{self.model_name}'.
+        Given this board state and rules, select the best move for Player {active_player_id} and respond ONLY with a JSON object containing the keys 'row' and 'col' for your chosen move (1-based indices).
 
-IMPORTANT:
-- You must **strictly avoid** playing on any cell that already contains "X" or "O".  
-- If all cells are occupied, return "pass".
-
-Here is the current game state:
-{{
-  "board": {json.dumps(formatted_grid, ensure_ascii=False)},
-  "to_move": "{current_mark}"
-}}
-
-Your task:
-- Choose exactly one valid move and **return only JSON** in the following format:
-  {{"row": <int>, "col": <int>}}
-- If no legal move is possible, return:
-  "pass"
-
-Decision Rules:
-1. Legal move = empty cell only  
-2. Objective: align exactly 5 identical symbols  
-3. Priority order: Win → Block → Double threat → Extend → Center → Edge → Smallest (row, col)  
-4. Never generate explanations or text outside the JSON  
-5. Absolute rule: never choose an occupied cell (doing so makes the response invalid)
-"""
-
-
-        system_message = """
-You are a logical Gomoku game engine.
-
-Immutable Rules:
-- Respond ONLY with pure JSON: {"row": <int>, "col": <int>} or "pass"
-- NEVER play on an occupied cell ("X" or "O")
-- An illegal move (occupied cell) is considered a critical error
-- If no legal moves exist, return only "pass"
-- Never produce explanations, comments, or free text
-"""
-
-
+        If no valid moves remain, respond with 'pass'.
+        """
+                
         json_payload = {
             "model": self.model_name,
             "prompt": prompt,
