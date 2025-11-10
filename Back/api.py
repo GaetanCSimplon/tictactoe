@@ -1,5 +1,5 @@
 from typing import List, Dict
-from .game_logic import format_grid_for_llm
+from .game_logic import format_grid_for_llm, check_win
 from Model.model import LLMClient
 from .move_request import MoveRequest
 from fastapi import FastAPI, HTTPException
