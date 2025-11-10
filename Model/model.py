@@ -4,6 +4,7 @@ import json
 from typing import List, Dict
 from fastapi import HTTPException
 from dotenv import load_dotenv
+# from Back.api import app
 
 load_dotenv()
 
@@ -11,11 +12,11 @@ load_dotenv()
 API_CONFIGS = {
     "o4-mini": {
         "endpoint": os.getenv("URL_O4MINI"),
-        "key": os.getenv("KEY_O4MINI") 
+        "key": os.getenv("KEY-O4MINI") 
     },
     "gpt-4o": {
         "endpoint": os.getenv("URL_GPT4O"),
-        "key": os.getenv('KEY_GPT4O')
+        "key": os.getenv("KEY_GPT4O")
     }
 }
 # Vérification que toutes les clés sont chargées
