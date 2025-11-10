@@ -13,6 +13,7 @@ const modelPlayer2 = "gpt-4o"
 
 let gameIsRunning = false;
 const playButton = document.querySelector("#play");
+const turnDisplay = document.querySelector("#turn-display");
 const DELAY_MS = 500;
 // Fonction d'affichage de la grille dans la page
 function viewGrid() {
@@ -42,7 +43,7 @@ async function runGameTurn() {
     if (!gameIsRunning) return; // Sécurité si le jeu a été arrêté
 
     const modelForThisTurn = (activePlayerId === 1) ? modelPlayer1 : modelPlayer2;
-
+    turnDisplay.textContent= `Au tour de ${modelForThisTurn} (Joueur ${activePlayerId} de jouer...)`;
     console.log(`Tour du Joueur ${activePlayerId}, Modèle: ${modelForThisTurn}`);
 
     const requestData = {
@@ -74,6 +75,7 @@ async function runGameTurn() {
         // 3. Vérifier les conditions de fin
         if (data.is_winner) {
             setTimeout(() => alert(`Victoire du Joueur ${data.player_id}!`), 100); // Léger délai pour l'alerte
+            turnDisplay.textContent = `Victoire de ${modelForThisTurn}`;
             gameIsRunning = false;
             playButton.disabled = false;
             return; // Arrête la boucle
@@ -81,6 +83,7 @@ async function runGameTurn() {
 
         if (data.is_draw) {
             setTimeout(() => alert("Match Nul !"), 100);
+            turnDisplay.textContent = "Match Nul.";
             gameIsRunning = false;
             playButton.disabled = false;
             return; // Arrête la boucle
@@ -94,6 +97,7 @@ async function runGameTurn() {
 
     } catch (error) {
         console.error("Erreur critique pendant le tour:", error);
+        turnDisplay.textContent = `Erreur: ${error.message}`;
         alert(error.message);
         gameIsRunning = false;
         playButton.disabled = false;
@@ -110,7 +114,8 @@ playButton.addEventListener("click", e => {
     // viewGrid();
     
     gameIsRunning = true;
-    playButton.disabled = true;
+    playButton.disabled = true; // Désactivation du bouton 'Play' une fois la partie lancée
+    turnDisplay.textContent = "La partie commence !";
     
     // Lance le premier tour
     runGameTurn(); 

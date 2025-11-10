@@ -91,6 +91,10 @@ class LLMClient:
         return """
         You are a highly efficient and strict Tic-Tac-Toe AI player on a 10x10 board.
         Your ONLY goal is to win by aligning exactly 5 marks.
+        **STRATEGIC PRIORITIES (Follow this order):**
+        1.  **DEFENSE (CRITICAL):** First, scan the *entire board* for any 4-in-a-row (horizontal, vertical, or diagonal) for your *opponent* that can be completed on their next turn. 
+        2.  If you find such a threat, your **#1 priority move MUST be to block that winning move.**
+        3.  **OFFENSE:** If there are no immediate defensive threats, find the best offensive move to build your own 5-in-a-row or create a new threat.
         
         STRICT INSTRUCTION: Your move MUST be an empty cell, represented by ' ' (a space).
         You MUST respond ONLY with a JSON object containing a "moves" key, which holds a list of your top 3 preferred moves.
