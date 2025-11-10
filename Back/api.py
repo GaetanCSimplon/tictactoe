@@ -1,21 +1,14 @@
 from typing import List, Dict
-<<<<<<< HEAD
 import json
-from game_logic import format_grid_for_llm
-=======
 from .game_logic import format_grid_for_llm
 from Model.model import LLMClient
 from .move_request import MoveRequest
->>>>>>> bd2f999f8ee49526219291477a81faf3e5cf2414
 from fastapi import FastAPI, HTTPException
 from starlette.middleware.cors import CORSMiddleware
 import httpx
-<<<<<<< HEAD
 from move_request import MoveRequest
-=======
 
 
->>>>>>> bd2f999f8ee49526219291477a81faf3e5cf2414
 
 app = FastAPI()
 
