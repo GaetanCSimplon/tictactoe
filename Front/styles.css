@@ -1,7 +1,7 @@
 /* Style général */
 body {
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  background: linear-gradient(135deg, #6a11cb, #739ee9);
   color: #fff;
   height: 100vh;
   margin: 0;
@@ -14,7 +14,7 @@ body {
 /* Titre */
 h1 {
   font-size: 3rem;
-  background: linear-gradient(45deg, #0e03a1, #4ec7eb);
+  background: linear-gradient(45deg, #04003f, #4ec7eb);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 40px;
@@ -42,7 +42,7 @@ h1 {
 }
 
 /* Grille du morpion */
-.grid {
+#grid {
   display: grid;
   grid-template-columns: repeat(3, 100px);
   grid-template-rows: repeat(3, 100px);
@@ -87,7 +87,7 @@ button:hover {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
-/* 🧩 Responsive */
+/* Responsive */
 @media (max-width: 600px) {
   .grid {
     grid-template-columns: repeat(3, 80px);
