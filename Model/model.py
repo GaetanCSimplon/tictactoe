@@ -7,12 +7,22 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# OLLAMA_API_URL = "http://127.0.0.1:11434/api/generate"
-AZURE_API_ENDPOINT = os.getenv("URL_O4MINI")
-AZURE_API_KEY = os.getenv("KEY_O4MINI")
-
-if not AZURE_API_ENDPOINT or not AZURE_API_KEY:
-    raise EnvironmentError("AZURE_API_ENDPOINT ou AZURE_API_KEY non trouvé.")
+# Stockage des configurations API dans un dict
+API_CONFIGS = {
+    "o4-mini": {
+        "endpoint": os.getenv("URL_O4MINI"),
+        "key": os.getenv("KEY_O4MINI") 
+    },
+    "gpt-4o": {
+        "endpoint": os.getenv("URL_GPT4O"),
+        "key": os.getenv('KEY_GPT4O')
+    }
+}
+# Vérification que toutes les clés sont chargées
+for model, config in API_CONFIGS.items():
+    if not config["endpoint"] or not config["key"]:
+        raise EnvironmentError(f"Clé ou Endpoint manquants pour {model}.")
+    
 
 def format_grid_for_llm(grid: List[List[int]]) -> str:
     """
@@ -36,10 +46,13 @@ def format_grid_for_llm(grid: List[List[int]]) -> str:
 class LLMClient:
     
     def __init__(self, model_name: str):
+        
+        if model_name not in API_CONFIGS:
+            raise ValueError(f"Configuration API non trouvé pour le modèle : {model_name}.")
+        
+        self.config = API_CONFIGS[model_name]
         self.model_name = model_name
         self.temperature = 1
-        self.api_endpoint = AZURE_API_ENDPOINT
-        self.api_key = AZURE_API_KEY
     
     # --- 1. Méthode Publique  ---
     
@@ -66,10 +79,10 @@ class LLMClient:
     # --- 2. Méthodes Privées ---
     def _build_headers(self) -> Dict:
         """
-        Construit les en-têtes d'authentification pour Azure
+        Construit les en-têtes d'authentification avec la clé API de l'instance actuelle.
         """
         return {
-            "Authorization": f"Bearer {self.api_key}",
+            "Authorization": f"Bearer {self.config['key']}",
             "Content-Type": "application/json"
         }
 
@@ -102,7 +115,7 @@ class LLMClient:
         """
     
     def _build_payload(self, user_prompt: str, system_prompt: str) -> Dict:
-        """Construit le dictionnaire JSON final pour l'API Ollama."""
+        """Construit le dictionnaire JSON final pour l'API du modèle."""
         return {
             "messages": [
                 {"role": "system", "content": system_prompt},
@@ -118,7 +131,7 @@ class LLMClient:
         headers = self._build_headers()
         async with httpx.AsyncClient(timeout=None) as client:
                     response = await client.post(
-                        self.api_endpoint,
+                        self.config["endpoint"],
                         json=json_payload,
                         headers=headers)
                     

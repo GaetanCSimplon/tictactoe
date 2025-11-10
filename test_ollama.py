@@ -4,11 +4,11 @@ from openai import AzureOpenAI
 
 load_dotenv()
 
-endpoint = os.getenv("URL_O4MINI")
-model_name = "o4-mini"
-deployment = "o4-mini"
+endpoint = os.getenv("URL_GPT4O")
+model_name = "gpt-4o"
+deployment = "gpt-4o"
 
-subscription_key = os.getenv("KEY_O4MINI")
+subscription_key = os.getenv("KEY_GPT4O")
 api_version = "2024-12-01-preview"
 
 client = AzureOpenAI(
@@ -28,7 +28,9 @@ response = client.chat.completions.create(
             "content": "I am going to Paris, what should I see?",
         }
     ],
-    max_completion_tokens=40000,
+    max_tokens=4096,
+    temperature=1.0,
+    top_p=1.0,
     model=deployment
 )
 
