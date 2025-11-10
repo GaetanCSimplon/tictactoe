@@ -105,10 +105,8 @@ async def play(request: MoveRequest):
             grid=request.grid,
             active_player_id=request.active_player_id
         )
-        return coup_joue
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        print(f"Erreur interne non gérée: {type(e).__name__}: {e}")
-        raise HTTPException(status_code=500, detail=f"Erreur interne lors du traitement du coup: {e}")
+        # Optionnel : vérifier victoire ici
 
+        return coup_joue
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
