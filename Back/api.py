@@ -1,23 +1,12 @@
 from typing import List, Dict
-<<<<<<< HEAD
-import json
-from game_logic import format_grid_for_llm
-=======
 from .game_logic import format_grid_for_llm
 from Model.model import LLMClient
 from .move_request import MoveRequest
->>>>>>> bd2f999f8ee49526219291477a81faf3e5cf2414
 from fastapi import FastAPI, HTTPException
 from starlette.middleware.cors import CORSMiddleware
 import httpx
-<<<<<<< HEAD
-from move_request import MoveRequest
-=======
 
-
->>>>>>> bd2f999f8ee49526219291477a81faf3e5cf2414
-
-app = FastAPI()
+app= FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
@@ -27,70 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
-class LLMClient:
-    
-    def __init__(self, model_name: str):
-        self.model_name = model_name
-    
-    async def get_llm_move(self, grid: List[List[str]], last_player_id: int, active_player_id: int) -> Dict[str, int]:
-        # Formatte la grille
-        formatted_grid = format_grid_for_llm(grid)
-        current_mark = "X" if active_player_id == 1 else "O"
-        
-        # Construction du prompt
-        prompt = f"""
-        You are playing a Tic-Tac-Toe game on a 10x10 board. Two players alternate placing their marks: Player 1 uses 'x' and Player 2 uses 'o'. The goal is to align exactly 5 marks consecutively horizontally, vertically, or diagonally.
-
-        Current game state (' ' for empty cells):
-        {formatted_grid}
-
-        Players alternate turns to avoid filling entire rows, columns, or diagonals completely.
-        The last move was played by Player {last_player_id}, but you should focus on the entire board state.
-        It is now Player {active_player_id}'s turn, who plays as '{current_mark}'. Your model's name is '{self.model_name}'.
-        Given this board state and rules, select the best move for Player {active_player_id} and respond ONLY with a JSON object containing the keys 'row' and 'col' for your chosen move (1-based indices).
-
-        If no valid moves remain, respond with 'pass'.
-        """
-                
-        json_payload = {
-            "model": self.model_name,
-            "prompt": prompt,
-            "stream": False,
-            "system": """You are a Tic-Tac-Toe player. In Tic-Tac-Toe,
-            two players take turns placing their marks (an 'x' for player 'x' and an 'o' for player 'o')
-            on a 10x10 grid. The goal is to get 5 of your marks in a row, either horizontally, vertically,
-            or diagonally. If all spaces on the grid are filled and neither player has achieved five in a row,
-            the game ends in a draw.""",
-                "options": {
-                "temperature": 1
-                },
-            "format": "json"
-        }
-
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(OLLAMA_API_URL, json=json_payload)
-            response.raise_for_status()
-            
-            ollama_response = response.json()
-            json_string = ollama_response.get("response", None)
-            
-            try:
-                coup_joue = json.loads(json_string)
-                # Vérifie que la réponse contient bien la position de la case jouée
-                if isinstance(coup_joue, dict) and 'row' in coup_joue and 'col' in coup_joue:
-                    return coup_joue
-                elif coup_joue == "pass":
-                    return {"pass": True}
-                else:
-                    raise ValueError("Réponse JSON du LLM incomplète ou invalide.")
-            except (json.JSONDecodeError, ValueError) as e:
-                print(f"Erreur LLM/Parsing: {e}")
-                raise RuntimeError("LLM a répondu de manière non conforme ou incomplète.")
-            
-
-
+MAX_RETRIES = 3 # Nombre de tentatives
 
 @app.post("/play")
 async def play(request: MoveRequest):
@@ -103,10 +29,42 @@ async def play(request: MoveRequest):
     try:
         coup_joue = await llm_client.get_llm_move(
             grid=request.grid,
-            active_player_id=request.active_player_id
+            active_player_id=request.active_player_id,
+            model_name=request.model_name,
+            max_retries=MAX_RETRIES
         )
-        # Optionnel : vérifier victoire ici
-
-        return coup_joue
+        # Créer une grille temporaire pour appliquer le coup
+        temp_grid = [row[:] for row in request.grid]
+        row = coup_joue["row"]
+        col = coup_joue["col"]
+        
+        # Appliquer le coup du LLM sur la grille temporaire
+        temp_grid[row][col] = request.active_player_id
+        
+        # Appelle la 
+        is_winner = check_win(
+            temp_grid,
+            request.active_player_id,
+            row,
+            col
+        )
+        
+        return {
+            "row": row,
+            "col": col,
+            "is_winner": is_winner,
+            "player_id": request.active_player_id
+        }
+    except ValueError as e:
+        # Erreur levée par process_llm_turn si les 3 tentatives échouent
+        raise HTTPException(status_code=400, detail=f"Echec du LLM : {e}")
+    except httpx.ConnectError:
+        # Erreur si Ollama n'est pas joignable
+        raise HTTPException(status_code=503, detail="Ollama injoignable.")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Lève les erreur 500/502 par le LLMCLient
+        raise e
+    except Exception as e:
+        # Lève les erreurs internes de Python
+        print(f"Erreur interne non gérée: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=50, detail=f"Erreur inattendue : {type(e).__name__}")
