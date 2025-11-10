@@ -41,24 +41,26 @@ async def play(request: MoveRequest):
             row,
             col
         )
-        
-        return {
-            "row": row,
-            "col": col,
-            "is_winner": is_winner,
-            "player_id": request.active_player_id
-        }
-    except ValueError as e:
-        # Erreur levée par process_llm_turn si les 3 tentatives échouent
-        raise HTTPException(status_code=400, detail=f"Echec du LLM : {e}")
-    except httpx.ConnectError:
-        # Erreur si Ollama n'est pas joignable
-        raise HTTPException(status_code=503, detail="Ollama injoignable.")
-    except Exception as e:
-        # Lève les erreur 500/502 par le LLMCLient
+        # if check_win(request.grid, request.active_player_id):
+        #     print("Victoire détectée pour le joueur", request.active_player_id)
+        return coup_joue
+    except HTTPException as e:
         raise e
     except Exception as e:
         # Lève les erreurs internes de Python
         print(f"Erreur interne non gérée: {type(e).__name__}: {e}")
         raise HTTPException(status_code=50, detail=f"Erreur inattendue : {type(e).__name__}")
 
+@app.post("/play")
+async def play(request: MoveRequest):
+    llm_client = LLMClient(model_name=request.model_name)
+    try:
+        coup_joue = await llm_client.get_llm_move(
+            grid=request.grid,
+            active_player_id=request.active_player_id
+        )
+        # Optionnel : vérifier victoire ici
+
+        return coup_joue
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

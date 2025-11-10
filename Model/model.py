@@ -1,10 +1,10 @@
-import httpx
 import json
+import httpx
 from typing import List, Dict
 from fastapi import HTTPException
+from Back.game_logic import format_grid_for_llm
 
-
-OLLAMA_API_URL = "http://127.0.0.1:11434/api/generate"
+OLLAMA_API_URL = "http://localhost:11434/api/generate"
 
 def format_grid_for_llm(grid: List[List[int]]) -> str:
     """
@@ -26,106 +26,96 @@ def format_grid_for_llm(grid: List[List[int]]) -> str:
     return output
 
 class LLMClient:
-    
-    def __init__(self, model_name: str):
+    def __init__(self, model_name: str, max_retries: int = 5):
         self.model_name = model_name
-        self.temperature = 0.2 
-    
-    # --- 1. Méthode Publique  ---
-    
-    async def get_llm_move_suggestions(self, grid: List[List[int]], active_player_id: int, error_history: str="") -> List[Dict[str, int]]:
-        """
-        Orchestre le processus complet pour obtenir les suggestions de coups.
-        """
-        
-        # Étape 1 : Construire les prompts
-        system_prompt = self._build_system_prompt()
-        user_prompt = self._build_user_prompt(grid, active_player_id, error_history)
-        
-        # Étape 2 : Construire le payload
-        json_payload = self._build_payload(user_prompt, system_prompt)
-        
-        # Étape 3 : Appeler l'API (gère les erreurs réseau)
-        ollama_response = await self._make_api_call(json_payload)
-        
-        # Étape 4 : Parser la réponse (gère les erreurs de format)
-        suggestions = self._parse_llm_response(ollama_response)
-        
-        return suggestions
+        self.max_retries = max_retries  # essais max si coup invalide
 
-    # --- 2. Méthodes Privées ---
-
-    def _build_system_prompt(self) -> str:
-        """Génère le prompt système statique."""
-        return """
-        You are a highly efficient and strict Tic-Tac-Toe AI player on a 10x10 board.
-        Your ONLY goal is to win by aligning exactly 5 marks.
-        
-        STRICT INSTRUCTION: Your move MUST be an empty cell, represented by ' ' (a space).
-        You MUST respond ONLY with a JSON object containing a "moves" key, which holds a list of your top 3 preferred moves.
-        Example: {"moves": [{"row": 5, "col": 5}, {"row": 4, "col": 5}, {"row": 6, "col": 6}]}
-        """
-
-    def _build_user_prompt(self, grid: List[List[int]], active_player_id: int, error_history: str) -> str:
-        """Génère le prompt utilisateur dynamique avec l'état du jeu."""
+    async def get_llm_move(self, grid: List[List[int]], active_player_id: int) -> Dict[str, int]:
         formatted_grid = format_grid_for_llm(grid)
         current_mark = "X" if active_player_id == 1 else "O"
-        
-        return f"""
-        You are playing a 10x10 Tic-Tac-Toe game.
-        Current game state (' ' means EMPTY cell):
-        {formatted_grid}
 
-        It is now Player {active_player_id}'s turn ({current_mark}).
-        {error_history}
+        prompt = f"""
 
-        CRUCIAL: Analyze the board and find the **Top 3 BEST moves** that are currently **EMPTY (' ')**.
-        Respond ONLY with the JSON format requested in the system prompt.
-        """
-    
-    def _build_payload(self, user_prompt: str, system_prompt: str) -> Dict:
-        """Construit le dictionnaire JSON final pour l'API Ollama."""
-        return {
+You are a logical and strategic AI engine playing the extended Tic-Tac-Toe game (Gomoku) on a 10x10 grid.
+
+- "X" = Player 1  
+- "O" = Player 2  
+- "." = empty cell  
+- Indices: row and col ∈ [0,9]
+
+IMPORTANT:
+- You must **strictly avoid** playing on any cell that already contains "X" or "O".  
+- If all cells are occupied, return "pass".
+
+Here is the current game state:
+{{
+  "board": {json.dumps(formatted_grid, ensure_ascii=False)},
+  "to_move": "{current_mark}"
+}}
+
+Your task:
+- Choose exactly one valid move and **return only JSON** in the following format:
+  {{"row": <int>, "col": <int>}}
+- If no legal move is possible, return:
+  "pass"
+
+Decision Rules:
+1. Legal move = empty cell only  
+2. Objective: align exactly 5 identical symbols  
+3. Priority order: Win → Block → Double threat → Extend → Center → Edge → Smallest (row, col)  
+4. Never generate explanations or text outside the JSON  
+5. Absolute rule: never choose an occupied cell (doing so makes the response invalid)
+"""
+
+
+        system_message = """
+You are a logical Gomoku game engine.
+
+Immutable Rules:
+- Respond ONLY with pure JSON: {"row": <int>, "col": <int>} or "pass"
+- NEVER play on an occupied cell ("X" or "O")
+- An illegal move (occupied cell) is considered a critical error
+- If no legal moves exist, return only "pass"
+- Never produce explanations, comments, or free text
+"""
+
+
+        json_payload = {
             "model": self.model_name,
-            "prompt": user_prompt,
-            "system": system_prompt,
+            "prompt": prompt,
+            "system": system_message,
             "stream": False,
-            "options": {
-                "temperature": self.temperature
-            },
+            "options": {"temperature": 0},
             "format": "json"
         }
 
-    async def _make_api_call(self, json_payload: Dict) -> Dict:
-        """Exécute l'appel HTTP asynchrone et gère les erreurs réseau."""
-        try:
-            async with httpx.AsyncClient(timeout=None) as client:
-                response = await client.post(OLLAMA_API_URL, json=json_payload)
-                response.raise_for_status() 
-                return response.json()
-        
-        except httpx.ConnectError:
-            raise HTTPException(status_code=503, detail="Ollama n'est pas joignable.")
-        except httpx.HTTPStatusError as e:
-            raise HTTPException(status_code=502, detail=f"Erreur du serveur Ollama: {e.response.text}")
+        # Retry si le LLM propose une case occupée
+        for _ in range(self.max_retries):
+            try:
+                async with httpx.AsyncClient(timeout=None) as client:
+                    response = await client.post(OLLAMA_API_URL, json=json_payload)
+                    response.raise_for_status()
+                    data = response.json()
+                    json_string = data.get("response")
+                    if not json_string:
+                        continue
 
-    def _parse_llm_response(self, ollama_response: Dict) -> List[Dict[str, int]]:
-        """Parse la réponse JSON d'Ollama et valide la structure attendue."""
-        json_string = None # Initialisé pour le bloc except
-        try:
-            json_string = ollama_response.get("response", None)
-            if json_string is None:
-                raise ValueError("La réponse Ollama est vide (clé 'response' manquante).")
-            
-            parsed_data = json.loads(json_string)
+                    coup_joue = json.loads(json_string)
 
-            # Valide la structure {"moves": [...]}
-            if isinstance(parsed_data, dict) and "moves" in parsed_data and isinstance(parsed_data["moves"], list):
-                return parsed_data["moves"]
-            else:
-                raise ValueError("Réponse JSON du LLM incomplète (clé 'moves' manquante ou n'est pas une liste).")
-        
-        except (json.JSONDecodeError, ValueError) as e:
-            # Gère les erreurs de parsing ou de structure
-            print(f"Erreur LLM/Parsing: {e}. Chaîne reçue: {json_string}")
-            raise HTTPException(status_code=500, detail=f"LLM a répondu de manière non-JSON ou invalide : {e}")
+                    # Coup valide {"row": int, "col": int}
+                    if isinstance(coup_joue, dict) and "row" in coup_joue and "col" in coup_joue:
+                        r, c = coup_joue["row"], coup_joue["col"]
+                        if 0 <= r <= 9 and 0 <= c <= 9 and grid[r][c] == 0:
+                            return {"row": r, "col": c}
+                        else:
+                            continue  # case occupée → retry
+
+                    # Cas "pass"
+                    if isinstance(coup_joue, str) and coup_joue.strip().lower() == "pass":
+                        return {"pass": True}
+
+            except (httpx.RequestError, httpx.HTTPStatusError, json.JSONDecodeError):
+                continue
+
+        # Si toutes les tentatives échouent
+        return {"pass": True}
