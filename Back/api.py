@@ -31,6 +31,8 @@ async def play(request: MoveRequest):
             grid=request.grid,
             active_player_id=request.active_player_id
         )
+        # if check_win(request.grid, request.active_player_id):
+        #     print("Victoire détectée pour le joueur", request.active_player_id)
         return coup_joue
     except HTTPException as e:
         raise e
@@ -38,3 +40,16 @@ async def play(request: MoveRequest):
         print(f"Erreur interne non gérée: {type(e).__name__}: {e}")
         raise HTTPException(status_code=500, detail=f"Erreur interne lors du traitement du coup: {e}")
 
+@app.post("/play")
+async def play(request: MoveRequest):
+    llm_client = LLMClient(model_name=request.model_name)
+    try:
+        coup_joue = await llm_client.get_llm_move(
+            grid=request.grid,
+            active_player_id=request.active_player_id
+        )
+        # Optionnel : vérifier victoire ici
+
+        return coup_joue
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
