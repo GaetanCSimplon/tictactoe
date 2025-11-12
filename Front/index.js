@@ -1,4 +1,4 @@
-const urlAPI = "tictactoe-get-nabil-edehcpdmb5dsgkf0.francecentral-01.azurewebsites.net";
+const urlAPI = "tictactoe-get-nabil-edehcpdmb5dsgkf0.francecentral-01.azurewebsites.net/play";
 
 // Variables liés à la grille de jeu
 const GRID_SIZE = 10;
