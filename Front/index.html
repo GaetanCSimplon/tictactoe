@@ -2,29 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tic Tac Toe</title>
-
-    <style>
-        #grid {
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            grid-template-rows: repeat(10, 1fr);
-            width: 500px;
-            height: 500px;
-        }
-        .cell{
-            border: 1px solid black;
-        }
-    </style>
+  <title>Magnifique Morpion</title>
+  <link rel="stylesheet" href="index.css">
 </head>
-<header>Tic tac toe (pas beau)</header>
+
 <body>
-    <div id="grid">
+  <h1>Tic Tac Toe</h1>
+
+  <div id="models">
+    <span id="player1"></span>
+    <span id="player2"></span>
+  </div>
+
+  <div id="game-container">
+    <div id="grid"></div>
+    <div id="custom-alert">
+      <span id="alert-text"></span>
     </div>
-    <button id="play">Play</button>
-    <h2 id="turn-display">Appuyez sur "Play" pour commencer</h2>
-<script src="index.js"></script>
+    <div id="log-container">
+      <h2>Journal des coups</h2>
+      <div id="log"></div>
+    </div>
+  </div>
+  <div id="btn-container">
+  <button id="play">Play</button>
+  <button id="reset">Reset</button>
+  </div>
+  <script src="index.js"></script>
 </body>
 </html>
