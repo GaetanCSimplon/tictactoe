@@ -6,13 +6,13 @@ from fastapi import HTTPException
 from dotenv import load_dotenv
 # from Back.api import app
 
-load_dotenv()
+# load_dotenv()
 
 # Stockage des configurations API dans un dict
 API_CONFIGS = {
     "o4-mini": {
         "endpoint": os.getenv("URL_O4MINI"),
-        "key": os.getenv("KEY-O4MINI") 
+        "key": os.getenv("KEY_O4MINI") 
     },
     "gpt-4o": {
         "endpoint": os.getenv("URL_GPT4O"),
