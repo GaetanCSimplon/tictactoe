@@ -1,0 +1,161 @@
+/* 🎨 Style général */
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #6a11cb, #739ee9);
+  color: #fff;
+  height: 100vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 30px;
+}
+
+/* 🏷️ Titre */
+h1 {
+  font-size: 3.5rem;
+  background: linear-gradient(45deg, #04003f, #4ec7eb);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 0.5px #fff;
+  text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+}
+
+/* 🧠 Modèles joueurs */
+#models {
+  display: flex;
+  gap: 40px;
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+}
+
+#models span {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px 15px;
+  border-radius: 12px;
+}
+
+/* 🎮 Conteneur principal (grille + log) */
+#game-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 30px;
+}
+
+/* 🎯 Grille */
+#grid {
+  display: grid;
+  grid-template-columns: repeat(10, 45px);
+  grid-template-rows: repeat(10, 45px);
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: 20px;
+}
+
+.cell {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+  user-select: none;
+}
+
+.cell:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+/* 🧾 Fenêtre de log */
+#log-container {
+  width: 260px;
+  max-height: 500px;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 15px;
+  padding: 15px;
+  box-shadow: 0 0 10px rgba(255,255,255,0.2);
+}
+
+#log-container h2 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  text-align: center;
+  color: #ffebd2;
+}
+
+#log {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: #fff;
+  font-family: monospace;
+}
+
+/* ▶️ Bouton Play */
+
+#play, #reset {
+  margin: 25px;
+  background: linear-gradient(90deg,#3003ad, #024cd4);
+  border: none;
+  color: #fff;
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+#play:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+#reset:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+
+
+#custom-alert {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.6); /* fond semi-transparent */
+  color: #fff;
+  padding: 20px 35px;
+  border-radius: 15px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  opacity: 0;
+  pointer-events: none; /* ne bloque pas la grille */
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 1000;
+}
+
+
+/* 📱 Responsive */
+@media (max-width: 900px) {
+  #game-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #log-container {
+    width: 80%;
+    margin-top: 20px;
+  }
+}

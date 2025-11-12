@@ -2,7 +2,7 @@ const urlAPI = "http://127.0.0.1:8000/play";
 
 // Variables liés à la grille de jeu
 const GRID_SIZE = 10;
-const grid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(0));
+let grid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(0));
 
 // Variable lié au joueur
 let activePlayerId = 1; // 1 pour 'X'
@@ -14,6 +14,9 @@ const playButton = document.querySelector("#play");
 const player1HTML = document.querySelector("#player1");
 const player2HTML = document.querySelector("#player2");
 
+// Bouton Reset
+const resetButton = document.querySelector("#reset");
+
 // Définition des models joueurs
 const modelPlayer1 = "o4-mini";
 const modelPlayer2 = "gpt-4o";
@@ -24,6 +27,10 @@ player2HTML.textContent = ` Joueur 2 : ${modelPlayer2}`;
 
 let gameIsRunning = false;
 const DELAY_MS = 500;
+
+let gameLoopTimeout = null;
+
+// Variable pour stocker l'ID du setTimeout
 
 // Fonction d'affichage de la grille
 function viewGrid() {
@@ -44,6 +51,24 @@ function viewGrid() {
   }
 }
 
+// Fonction de reset
+function resetGame() {
+  addLog("Réinitialisation de la partie...");
+  // 1 - Arrête toute boucle de jeu en attente
+  if (gameLoopTimeout) {
+    clearTimeout(gameLoopTimeout);
+    gameLoopTimeout = null;
+  }
+  gameIsRunning = false;
+
+  // 2 - Réinitialisation des données du jeu
+  grid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(0));
+  activePlayerId = 1;
+  // 3 - Réinitialisation de l'interface
+  viewGrid();
+  playButton.disabled = false
+  highlightActivePlayer();
+}
 
 // Fonction pour ajouter un log
 function addLog(message) {
@@ -144,7 +169,7 @@ async function runGameTurn() {
 
     // Tour suivant
     activePlayerId = 3 - activePlayerId;
-    setTimeout(runGameTurn, DELAY_MS);
+    gameLoopTimeout = setTimeout(runGameTurn, DELAY_MS);
   } catch (error) {
     console.error("Erreur pendant le tour:", error);
     addLog("❌ Erreur: " + error.message);
@@ -156,15 +181,26 @@ async function runGameTurn() {
 // --- Démarrage du jeu ---
 playButton.addEventListener("click", () => {
   if (gameIsRunning) return;
-
+  // Réinitialisation d'une partie
+  resetGame();
+  // Nettoyage des logs
+  logHTML.innerHTML = "";
+  addLog("Nouveau match lancé ! ")
+  // Lancement d'une partie
   gameIsRunning = true;
   playButton.disabled = true;
   logHTML.innerHTML = "";
   addLog("🎬 Nouveau match lancé !");
-  activePlayerId = 1;
-  viewGrid();
   runGameTurn();
 });
+
+if (resetButton) {
+  resetButton.addEventListener("click", () => {
+    addLog("Partie arrêtée par l'utilisateur.");
+    resetGame();
+
+  })
+}
 
 // Grille initiale
 viewGrid();
