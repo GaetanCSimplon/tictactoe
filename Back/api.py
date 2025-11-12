@@ -3,6 +3,8 @@ from .move_request import MoveRequest
 from fastapi import FastAPI, HTTPException
 from starlette.middleware.cors import CORSMiddleware
 import httpx
+import os
+from fastapi.responses import FileResponse
 
 app= FastAPI()
 
@@ -15,6 +17,13 @@ app.add_middleware(
 )
 
 MAX_RETRIES = 3 
+
+@app.get("/")
+async def root():
+    index_path = os.path.join("Front", "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {"message": "Frontend non trouvé."}
 
 @app.post("/play")
 async def play(request: MoveRequest):
