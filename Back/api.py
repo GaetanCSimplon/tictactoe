@@ -16,6 +16,10 @@ app.add_middleware(
 
 MAX_RETRIES = 3 
 
+@app.get("/")
+async def root():
+    return {"status": "ok"}
+
 @app.post("/play")
 async def play(request: MoveRequest):
     """
