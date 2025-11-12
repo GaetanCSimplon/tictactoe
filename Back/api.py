@@ -1,62 +1,50 @@
-from .game_logic import process_llm_turn, check_win, is_grid_full
-from .move_request import MoveRequest
 from fastapi import FastAPI, HTTPException
-from starlette.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 import httpx
-import os
-from fastapi.responses import FileResponse
 
-app= FastAPI()
+from .move_request import MoveRequest
+from .game_logic import process_llm_turn, check_win, is_grid_full
+
+app = FastAPI(title="Tic Tac Toe Backend")
+
+# --- CORS CONFIGURATION ---
+origins = [
+    "https://zealous-stone-0b1da0103.3.azurestaticapps.net",  # ton front déployé sur Azure
+    "http://localhost:5500",  # utile pour les tests locaux
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins="*",
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-MAX_RETRIES = 3 
+MAX_RETRIES = 3
 
 @app.get("/")
 async def root():
-    index_path = os.path.join("Front", "index.html")
-    if os.path.exists(index_path):
-        return FileResponse(index_path)
-    return {"message": "Frontend non trouvé."}
+    return {"message": "API Tic-Tac-Toe opérationnelle 🎯"}
 
 @app.post("/play")
 async def play(request: MoveRequest):
-    """
-    Déclenche le jeu automatique. La boucle s'arrête si :
-    1. Victoire détectée.
-    2. Grille complète (Match Nul).
-    3. Erreur irrécupérable du LLM.
-    """
-        
     try:
-        # 1. Obtenir le coup valide
         coup_joue = await process_llm_turn(
             grid=request.grid,
             active_player_id=request.active_player_id,
             model_name=request.model_name,
             max_retries=MAX_RETRIES
         )
-        
-        row = coup_joue["row"]
-        col = coup_joue["col"]
 
-        # 2. Appliquer le coup à une grille temporaire pour la vérification
+        row, col = coup_joue["row"], coup_joue["col"]
         temp_grid = [r[:] for r in request.grid]
         temp_grid[row][col] = request.active_player_id
-        
-        # 3. Vérifier les conditions de fin de jeu
+
         is_winner = check_win(temp_grid, request.active_player_id, row, col)
-        is_draw = False
-        if not is_winner:
-            is_draw = is_grid_full(temp_grid)
-        
-        # 4. Retourner le coup et le statut du jeu
+        is_draw = not is_winner and is_grid_full(temp_grid)
+
         return {
             "row": row,
             "col": col,
@@ -65,14 +53,10 @@ async def play(request: MoveRequest):
             "is_draw": is_draw
         }
 
-        # --- Gestion des erreurs (inchangée) ---
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Échec du LLM : {e}")
     except httpx.ConnectError:
         raise HTTPException(status_code=503, detail="Serveur LLM (Azure) injoignable.")
-    except HTTPException as e:
-        raise e
     except Exception as e:
-        print(f"Erreur interne non gérée: {type(e).__name__}: {e}")
+        print(f"Erreur interne non gérée: {e}")
         raise HTTPException(status_code=500, detail=f"Erreur interne inattendue : {type(e).__name__}")
-    
