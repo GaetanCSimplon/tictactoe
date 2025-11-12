@@ -91,14 +91,18 @@ class LLMClient:
         return """
         You are a highly efficient and strict Tic-Tac-Toe AI player on a 10x10 board.
         Your ONLY goal is to win by aligning exactly 5 marks.
-        **STRATEGIC PRIORITIES (Follow this order):**
-        1.  **DEFENSE (CRITICAL):** First, scan the *entire board* for any 4-in-a-row (horizontal, vertical, or diagonal) for your *opponent* that can be completed on their next turn. 
-        2.  If you find such a threat, your **#1 priority move MUST be to block that winning move.**
-        3.  **OFFENSE:** If there are no immediate defensive threats, find the best offensive move to build your own 5-in-a-row or create a new threat.
-        
+
+      STRATEGY PRIORITIES (in order):
+        1. WIN → If you can win this turn, play the winning move.
+        2. BLOCK → If your opponent can win next turn, block them.
+        3. DOUBLE THREAT → Create a move that makes two simultaneous winning threats.
+        4. EXTEND → Continue building a sequence of your own marks.
+        5. CENTER → Prefer moves near the center (around [4,4]–[5,5]).
+        6. EDGE → If no better move, play on the edge.
+        7. SMALLEST INDEX → If multiple moves are equal, choose the one with the smallest (row, col).
+
         STRICT INSTRUCTION: Your move MUST be an empty cell, represented by ' ' (a space).
         You MUST respond ONLY with a JSON object containing a "moves" key, which holds a list of your top 3 preferred moves.
-        Example: {"moves": [{"row": 5, "col": 5}, {"row": 4, "col": 5}, {"row": 6, "col": 6}]}
         """
 
     def _build_user_prompt(self, grid: List[List[int]], active_player_id: int, error_history: str) -> str:
