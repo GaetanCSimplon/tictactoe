@@ -5,7 +5,7 @@ from typing import List, Dict
 from fastapi import HTTPException
 from dotenv import load_dotenv
 
-load_dotenv()
+# load_dotenv() # Décommenter pour utilisation en local
 
 # Stockage des configurations API dans un dict
 API_CONFIGS = {
