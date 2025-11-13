@@ -73,7 +73,7 @@ Faire affronter des LLM dans un jeu du morpion dans une grille 10x10. Le systèm
 ### Model/model.py
 
 - Construit les prompts (utilisation de ```format_grid_for_llm```)
-- Appelle le modèle (pour l'instant de Ollama, httpx pour les requêtes)
+- Appelle les modèles (httpx pour les requêtes pour l'aspect asynchrone)
 - Parse la réponse JSON du LLM
 
 ## Schéma - Diagramme de séquence
