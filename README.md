@@ -79,43 +79,51 @@ Faire affronter des LLM dans un jeu du morpion dans une grille 10x10. Le systèm
 ## Schéma - Diagramme de séquence
 ```mermaid
 sequenceDiagram
-    participant U as Utilisateur (Navigateur)
-    participant F as Front/index.js
-    participant A as Back/api.py (Contrôleur)
-    participant G as Back/game_logic.py (Cerveau)
-    participant M as Model/model.py (Client LLM)
-    participant O as Ollama (Serveur IA)
+    participant U as Utilisateur
+    participant F as Front_index_js - Boucle_Animation
+    participant A as Back_api_py - Controleur
+    participant G as Back_game_logic_py - Service_Arbitre
+    participant M as Model_model_py - Client_LLM
+    participant O as Azure_AI_Foundry - LLM
 
-    U->>F: Clic sur "Play"
-    F->>A: fetch("/play", JSON_Grid)
-    A->>G: Appelle process_llm_turn(grid, ...)
-
-    loop Tentatives (MAX_RETRIES)
-        G->>M: Appelle get_llm_move_suggestions(...)
-        M-->>G: (Python) Renvoie [coup1, coup2, coup3]
+    U->>F: Clic "Play" lance runGameTurn
+    
+    loop Tant_que_la_partie_n_est_pas_terminee
+        F->>A: 1. fetch /play (Grille + Joueur actif)
+        activate A
         
-        G->>G: Vérifie is_move_valid(coup1)
-        alt Coup 1 valide
-            G-->>A: Renvoie coup1
-        else Coup 1 invalide
-            G->>G: Vérifie is_move_valid(coup2)
-            alt Coup 2 valide
-                G-->>A: Renvoie coup2
-            else Coup 2 invalide
-                G->>G: Vérifie is_move_valid(coup3)
-                alt Coup 3 valide
-                    G-->>A: Renvoie coup3
-                else Coup 3 invalide
-                    G->>G: Prépare error_history
-                end
+        A->>G: 2. Appelle process_llm_turn
+        activate G
+        
+        loop Tentatives_LLM_MAX_RETRIES
+            G->>M: 3. Appelle get_llm_move_suggestions
+            M->>O: 4. httpx.post Prompt_Strategique
+            O-->>M: 5. Renvoie suggestions JSON
+            M-->>G: 6. Liste des suggestions (Parsing)
+            
+            G->>G: 7. Verifie is_move_valid sur la premiere suggestion
+            
+            alt Coup_valide_trouve
+                G-->>A: 8. Retourne le coup valide
+            else Coup_invalide
+                G->>G: 9. Met a jour error_history
             end
         end
+        deactivate G
+        
+        A->>A: 10. Verifie check_win et is_grid_full
+        A-->>F: 11. Renvoie {coup, is_winner, is_draw}
+        deactivate A
+        
+        F->>F: 12. Met a jour la variable grid
+        F->>U: 13. Affiche viewGrid
+        
+        alt Partie_terminee_win_ou_nul
+            F->>F: 14. Arrete la boucle (gameIsRunning=false)
+        else Partie_continue
+            F->>F: 15. setTimeout(runGameTurn, DELAY_MS)
+        end
     end
-    
-    A-->>F: Renvoie {"row": X, "col": Y}
-    
-    F->>F: Met à jour la variable grid
-    F->>U: Affiche le coup via viewGrid()
 
 ```
 
