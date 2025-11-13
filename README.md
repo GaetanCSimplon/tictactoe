@@ -77,6 +77,7 @@ Faire affronter des LLM dans un jeu du morpion dans une grille 10x10. Le systèm
 - Parse la réponse JSON du LLM
 
 ## Schéma - Diagramme de séquence
+
 ```mermaid
 sequenceDiagram
     participant U as Utilisateur
