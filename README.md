@@ -3,7 +3,9 @@ Création d'un jeu du morpion IA vs IA
 
 ## Lien vers l'application
 
-[TicTactoe](https://calm-desert-0e016c203.3.azurestaticapps.net)
+[TicTactoe - Déploiement AZ de Gaëtan](https://calm-desert-0e016c203.3.azurestaticapps.net)
+
+[TicTactoe - Déploiement AZ de Nabil]((https://zealous-stone-0b1da0103.3.azurestaticapps.net/))
 
 ## Objectif du projet
 
