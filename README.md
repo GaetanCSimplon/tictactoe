@@ -12,10 +12,14 @@ Faire affronter des LLM dans un jeu du morpion dans une grille 10x10. Le systèm
 ## Stack Technique
 
 **Langage** : Python 3.12, Javascript.
+
 **Back-end** : FastAPI (Serveur API Asynchrone), httpx (Client HTTP Asynchrone), Pydantic (Validation des données).
-**Dépendances** : Poetry (Gestion des dépendances)
-**Modèles IA** : Modèles de Azure IA Foundry - o4-mini & gpt-o4
-**Déploiement** : Docker (back-end) & Azure App Service
+
+**Dépendances** : Poetry (Gestion des dépendances).
+
+**Modèles IA** : Modèles de Azure IA Foundry - o4-mini & gpt-o4.
+
+**Déploiement** : Docker (back-end) & Azure App Service.
 
 ## 2. Architecture et responsabilités
 
