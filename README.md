@@ -68,7 +68,7 @@ Faire affronter des LLM dans un jeu du morpion dans une grille 10x10. Le systèm
 
 - Contient la boucle de tentative ```process_llm_turn```
 - Contient la logique de vérification des coups```is_move_valid```
-- Prochainement implémentation de la condition de victoire
+- Contient la condition de victoire ``` check_win ```
 
 ### Model/model.py
 
